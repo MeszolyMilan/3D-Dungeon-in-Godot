@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://csokt50hcd7an"]
+
+[ext_resource type="Script" path="res://scripts/DungeonRender.cs" id="1_gucnk"]
+[ext_resource type="MeshLibrary" uid="uid://b6kxdprenwbxw" path="res://scenes/debug_tiles.tres" id="1_p2yov"]
+
+[node name="Dungeon" type="Node"]
+script = ExtResource("1_gucnk")
+
+[node name="GridMap" type="GridMap" parent="."]
+mesh_library = ExtResource("1_p2yov")
+cell_size = Vector3(1, 1, 1)

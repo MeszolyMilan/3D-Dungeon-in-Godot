@@ -8,8 +8,8 @@ public class DungGeneration
     public List<Building> Buildings { get; private set; }
     public List<Vector2I[]> Hallways { get; private set; }
     //Only for show
-    public Vector2[] EditorVerts { get; private set; }
-    public int[] EditorTris { get; private set; }
+    public Vector2[] MainDoors { get; private set; }
+    public int[] BuildingTris { get; private set; }
     //
     private int _spawnRadius;
     private int _buildingCount;
@@ -48,7 +48,7 @@ public class DungGeneration
                     Vector2I center1 = building1.Rect.GetCenter();
                     Vector2I center2 = building2.Rect.GetCenter();
 
-                    if (center1.Length() < center2.Length())
+                    if (center1.LengthSquared() < center2.LengthSquared())
                     {
                         Vector2 direction = center2 - center1;
                         building2.Move((Vector2I)direction);
@@ -69,12 +69,27 @@ public class DungGeneration
     }
     private void GenerateHallways()
     {
-        EditorVerts = new Vector2[Buildings.Count];
+        MainDoors = new Vector2[Buildings.Count];
+        AStar2D trisGraph = new AStar2D();
+        AStar2D mstGraph = new AStar2D(); //Minimum Spanning Tree
         for (int i = 0; i < Buildings.Count; i++)
         {
-            EditorVerts[i] = Buildings[i].Doors[0].Position;
+            Vector2I pos = Buildings[i].Doors[0].Position;
+            MainDoors[i] = pos;
+            trisGraph.AddPoint(trisGraph.GetAvailablePointId(), pos);
+            mstGraph.AddPoint(mstGraph.GetAvailablePointId(), pos);
         }
-        EditorTris = Geometry2D.TriangulateDelaunay(EditorVerts);
+        BuildingTris = Geometry2D.TriangulateDelaunay(MainDoors);
+        for (int i = 0; i < BuildingTris.Length - 2; i++)
+        {
+            int p0 = BuildingTris[i];
+            int p1 = BuildingTris[i + 1];
+            int p2 = BuildingTris[i + 2];
+            trisGraph.ConnectPoints(p0, p1);
+            trisGraph.ConnectPoints(p1, p2);
+            trisGraph.ConnectPoints(p0, p2);
+        }
+        //int[] visitedPoints = new int[];
     }
     private Vector2I GetRandomPoint()
     {

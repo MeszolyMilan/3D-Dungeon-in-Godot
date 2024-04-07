@@ -110,11 +110,11 @@ public partial class DungGenEditor : Node2D
         {
             Color trisColor = Colors.Yellow;
             trisColor.A = 0.5f;
-            for (int i = 0; i < _gen.EditorTris.Length - 2; i++)
+            for (int i = 0; i < _gen.BuildingTris.Length - 2; i++)
             {
-                DrawLine(_gen.EditorVerts[_gen.EditorTris[i + 0]], _gen.EditorVerts[_gen.EditorTris[i + 1]], trisColor, 0.5f);
-                DrawLine(_gen.EditorVerts[_gen.EditorTris[i + 1]], _gen.EditorVerts[_gen.EditorTris[i + 2]], trisColor, 0.5f);
-                DrawLine(_gen.EditorVerts[_gen.EditorTris[i + 0]], _gen.EditorVerts[_gen.EditorTris[i + 2]], trisColor, 0.5f);
+                DrawLine(_gen.MainDoors[_gen.BuildingTris[i]], _gen.MainDoors[_gen.BuildingTris[i + 1]], trisColor, 0.5f);
+                DrawLine(_gen.MainDoors[_gen.BuildingTris[i + 1]], _gen.MainDoors[_gen.BuildingTris[i + 2]], trisColor, 0.5f);
+                DrawLine(_gen.MainDoors[_gen.BuildingTris[i]], _gen.MainDoors[_gen.BuildingTris[i + 2]], trisColor, 0.5f);
             }
         }
     }

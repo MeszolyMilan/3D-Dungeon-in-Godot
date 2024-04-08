@@ -8,8 +8,8 @@ public class DungGeneration
     public List<Building> Buildings { get; private set; }
     public List<Vector2I[]> Hallways { get; private set; }
     //Only for show
-    public Vector2[] MainDoors { get; private set; }
-    public int[] BuildingTris { get; private set; }
+    public Vector2[] ConnPs { get; private set; }
+    public int[] ConnPTris { get; private set; }
     //
     private int _spawnRadius;
     private int _buildingCount;
@@ -69,27 +69,48 @@ public class DungGeneration
     }
     private void GenerateHallways()
     {
-        MainDoors = new Vector2[Buildings.Count];
-        AStar2D trisGraph = new AStar2D();
-        AStar2D mstGraph = new AStar2D(); //Minimum Spanning Tree
+        ConnPs = new Vector2[Buildings.Count];
+        AStar2D dealunayGraph = new AStar2D();
+        AStar2D mstGraph = new AStar2D(); //Minimum Spending Tree
+
         for (int i = 0; i < Buildings.Count; i++)
         {
             Vector2I pos = Buildings[i].Doors[0].Position;
-            MainDoors[i] = pos;
-            trisGraph.AddPoint(trisGraph.GetAvailablePointId(), pos);
-            mstGraph.AddPoint(mstGraph.GetAvailablePointId(), pos);
+            ConnPs[i] = pos;
+            dealunayGraph.AddPoint(i, pos);
         }
-        BuildingTris = Geometry2D.TriangulateDelaunay(MainDoors);
-        for (int i = 0; i < BuildingTris.Length - 2; i++)
+        ConnPTris = Geometry2D.TriangulateDelaunay(ConnPs);
+        for (int i = 0; i < ConnPTris.Length - 2; i++)
         {
-            int p0 = BuildingTris[i];
-            int p1 = BuildingTris[i + 1];
-            int p2 = BuildingTris[i + 2];
-            trisGraph.ConnectPoints(p0, p1);
-            trisGraph.ConnectPoints(p1, p2);
-            trisGraph.ConnectPoints(p0, p2);
+            int p0 = ConnPTris[i];
+            int p1 = ConnPTris[i + 1];
+            int p2 = ConnPTris[i + 2];
+            dealunayGraph.ConnectPoints(p0, p1);
+            dealunayGraph.ConnectPoints(p1, p2);
+            dealunayGraph.ConnectPoints(p0, p2);
         }
-        //int[] visitedPoints = new int[];
+        List<long> visitedPs = new List<long> { RNG.RandiRange(0, ConnPs.Length - 1) };
+        while (visitedPs.Count != ConnPs.Length)
+        {
+            List<(long, long)> possibleConns = new List<(long, long)>();
+            foreach (var visitedP in visitedPs)
+            {
+                foreach (var connP in dealunayGraph.GetPointConnections(visitedP))
+                {
+                    if (visitedPs.Contains(connP) == false)
+                    {
+                        possibleConns.Add((visitedP, connP));
+                    }
+                    var connection = possibleConns[0];
+                    for (int i = 1; i < possibleConns.Count; i++)
+                    {
+                        var conn = possibleConns[i];
+
+                    }
+                }
+            }
+            //;
+        }
     }
     private Vector2I GetRandomPoint()
     {

@@ -3,10 +3,10 @@ using Godot;
 
 public class Building
 {
-    public struct Door
+    public class Door
     {
-        public Vector2I Position;
-        public Vector2I Direction;
+        public Vector2I Position { get; set; }
+        public Vector2I Direction { get; private set; }
         public Door(Vector2I position, Vector2I direction)
         {
             Position = position;

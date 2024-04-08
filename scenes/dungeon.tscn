@@ -17,5 +17,4 @@ data = {
 [node name="GenerationEditor" type="Node2D" parent="."]
 script = ExtResource("2_b6sm2")
 _seed_ = 3
-_buildingCount_ = 5
 _showTriangles_ = true

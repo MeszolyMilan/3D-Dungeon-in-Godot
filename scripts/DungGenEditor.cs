@@ -103,18 +103,18 @@ public partial class DungGenEditor : Node2D
             //Doors
             foreach (var door in building.Doors)
             {
-                DrawCircle(door.Position, 0.5f, Colors.Green);
+                DrawCircle(door.Position, 2, Colors.Green);
             }
         }
         if (_showTriangles)
         {
             Color trisColor = Colors.Yellow;
             trisColor.A = 0.5f;
-            for (int i = 0; i < _gen.BuildingTris.Length - 2; i++)
+            for (int i = 0; i < _gen.ConnPTris.Length - 2; i++)
             {
-                DrawLine(_gen.MainDoors[_gen.BuildingTris[i]], _gen.MainDoors[_gen.BuildingTris[i + 1]], trisColor, 0.5f);
-                DrawLine(_gen.MainDoors[_gen.BuildingTris[i + 1]], _gen.MainDoors[_gen.BuildingTris[i + 2]], trisColor, 0.5f);
-                DrawLine(_gen.MainDoors[_gen.BuildingTris[i]], _gen.MainDoors[_gen.BuildingTris[i + 2]], trisColor, 0.5f);
+                DrawLine(_gen.ConnPs[_gen.ConnPTris[i]], _gen.ConnPs[_gen.ConnPTris[i + 1]], trisColor, 0.5f);
+                DrawLine(_gen.ConnPs[_gen.ConnPTris[i + 1]], _gen.ConnPs[_gen.ConnPTris[i + 2]], trisColor, 0.5f);
+                DrawLine(_gen.ConnPs[_gen.ConnPTris[i]], _gen.ConnPs[_gen.ConnPTris[i + 2]], trisColor, 0.5f);
             }
         }
     }

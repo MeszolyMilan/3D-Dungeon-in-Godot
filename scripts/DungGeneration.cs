@@ -182,7 +182,7 @@ public class DungGeneration
             {
                 for (int y = 0; y < building.Rect.Size.Y; x++)
                 {
-                    grid.SetPointSolid(building.Rect.Position + new Vector2I(x, y));
+                    //grid.SetPointSolid(building.Rect.Position + new Vector2I(x, y));
                 }
             }
             int absX = Math.Abs(building.Rect.End.X - building.Doors[0].Position.X);

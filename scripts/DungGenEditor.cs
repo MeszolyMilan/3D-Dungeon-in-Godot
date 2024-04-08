@@ -59,31 +59,63 @@ public partial class DungGenEditor : Node2D
     [Export]
     private bool _showTriangles_
     {
-        get
-        {
-            return _showTriangles;
-        }
+        get => _showTriangles;
         set
         {
-            QueueRedraw();
             _showTriangles = value;
+            QueueRedraw();
+        }
+    }
+    [Export(PropertyHint.Range, "0,100,1,")]
+    private int _extraConnectionChance_
+    {
+        get => _extraConnectionChance;
+        set
+        {
+            _extraConnectionChance = value;
+            Generate();
+        }
+    }
+    [Export]
+    private bool _showConnections_
+    {
+        get => _showConnections;
+        set
+        {
+            _showConnections = value;
+            QueueRedraw();
+        }
+    }
+    [Export]
+    private bool _showHallways_
+    {
+        get => _showHallways;
+        set
+        {
+            _showHallways = value;
+            if (value) { _showConnections = false; _showTriangles = false; }
+            QueueRedraw();
         }
     }
     private int _spawnCircleSize = 128;
     private int _buildingSize = 32;
     private int _buildingCount = 3;
+    private int _extraConnectionChance = 0;
     private ulong _seed;
     private DungGeneration _gen;
     private bool _showTriangles;
+    private bool _showConnections;
+    private bool _showHallways;
     private void Generate()
     {
-        _gen = new DungGeneration(_seed, _spawnCircleSize, _buildingCount, _buildingSize);
-        if (Engine.IsEditorHint()) { QueueRedraw(); }
+        _gen = new DungGeneration(_seed, _spawnCircleSize, _buildingCount, _buildingSize, _extraConnectionChance);
+        QueueRedraw();
         //GetParent<DungRenderer>().Generate(_gen);
     }
     public override void _Draw()
     {
-        if (_gen == null) { return; }
+        if (_gen == null || Engine.IsEditorHint() == false) { return; }
+
         Color circleColor = Colors.White;
         circleColor.A = 0.25f;
         DrawArc(Position, _spawnCircleSize, 0, 360, 36, circleColor, 8);
@@ -108,13 +140,29 @@ public partial class DungGenEditor : Node2D
         }
         if (_showTriangles)
         {
-            Color trisColor = Colors.Yellow;
-            trisColor.A = 0.5f;
             for (int i = 0; i < _gen.ConnPTris.Length - 2; i++)
             {
-                DrawLine(_gen.ConnPs[_gen.ConnPTris[i]], _gen.ConnPs[_gen.ConnPTris[i + 1]], trisColor, 0.5f);
-                DrawLine(_gen.ConnPs[_gen.ConnPTris[i + 1]], _gen.ConnPs[_gen.ConnPTris[i + 2]], trisColor, 0.5f);
-                DrawLine(_gen.ConnPs[_gen.ConnPTris[i]], _gen.ConnPs[_gen.ConnPTris[i + 2]], trisColor, 0.5f);
+                DrawLine(_gen.ConnPs[_gen.ConnPTris[i]], _gen.ConnPs[_gen.ConnPTris[i + 1]], Colors.Yellow, 0.5f);
+                DrawLine(_gen.ConnPs[_gen.ConnPTris[i + 1]], _gen.ConnPs[_gen.ConnPTris[i + 2]], Colors.Yellow, 0.5f);
+                DrawLine(_gen.ConnPs[_gen.ConnPTris[i]], _gen.ConnPs[_gen.ConnPTris[i + 2]], Colors.Yellow, 0.5f);
+            }
+        }
+        if (_showConnections)
+        {
+            foreach (var conn in _gen.Conns)
+            {
+                DrawLine(_gen.ConnPs[conn.Item1], _gen.ConnPs[conn.Item2], Colors.Yellow, 2f);
+            }
+        }
+        if (_showHallways)
+        {
+            Vector2 offset = new Vector2(0.5f, 0.5f);
+            foreach (var hallway in _gen.Hallways)
+            {
+                for (int i = 0; i < hallway.Length - 1; i++)
+                {
+                    DrawLine(hallway[i] + offset, hallway[i + 1] + offset, Colors.Yellow, 1);
+                }
             }
         }
     }

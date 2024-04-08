@@ -60,7 +60,7 @@ public class Building
     private void GenerateRooms(Vector2I position, int maxSize)
     {
         //http://chongyangma.com/publications/gl/2014_gl_preprint.pdf i should implement this instead of this shit xd
-        Rect2I mainRoom = new Rect2I(position, GetRandomSize(maxSize));
+        Rect2I mainRoom = new Rect2I(position, GetRandomSize(3, maxSize));
         int tryCount = 33;
         while (tryCount > 0)
         {
@@ -74,7 +74,7 @@ public class Building
                 var directionsCopy = new List<Vector2I>(directions);
                 Vector2I direction = directionsCopy[DungGeneration.RNG.RandiRange(0, directionsCopy.Count - 1)];
                 directionsCopy.Remove(direction);
-                Vector2I size = GetRandomSize(maxSize);
+                Vector2I size = GetRandomSize(2, maxSize);
                 Vector2I connectPoint = GetConnectPoint(mainRoom, size, direction);
                 if (direction == Vector2I.Up)
                 {
@@ -110,9 +110,6 @@ public class Building
                 }
                 if (overlap) { break; }
             }
-
-
-
             if (overlap == false) { break; }
             tryCount--;
         }
@@ -124,6 +121,9 @@ public class Building
                 Rect = Rect.Merge(Rooms[i]);
             }
         }
+        //Adding random extra size for hallways dont go next to walls
+        Vector2I extraSize = GetRandomSize(4, 8);
+        Rect = new Rect2I(Rect.Position - extraSize / 2, Rect.Size + extraSize);
         _offset = Rect.Position;
     }
     private Vector2I GetConnectPoint(Rect2I mainRoom, Vector2I size, Vector2I direction)
@@ -147,11 +147,11 @@ public class Building
         }
         return connectPoint;
     }
-    private Vector2I GetRandomSize(int maxSize)
+    private Vector2I GetRandomSize(int minSize, int maxSize)
     {
-        int x = DungGeneration.RNG.RandiRange(3, maxSize);
+        int x = DungGeneration.RNG.RandiRange(minSize, maxSize);
         int maxY = Mathf.Min(maxSize, Mathf.RoundToInt(x * 1.5));
-        int minY = Mathf.Max(3, Mathf.RoundToInt(x * 0.5));
+        int minY = Mathf.Max(minSize, Mathf.RoundToInt(x * 0.5));
         int y = DungGeneration.RNG.RandiRange(minY, maxY);
         return new Vector2I(x, y);
     }

@@ -122,7 +122,7 @@ public class Building
             }
         }
         //Adding random extra size for hallways dont go next to walls
-        Vector2I extraSize = GetRandomSize(4, 8);
+        Vector2I extraSize = GetRandomSize(9, 10);
         Rect = new Rect2I(Rect.Position - extraSize / 2, Rect.Size + extraSize);
         _offset = Rect.Position;
     }

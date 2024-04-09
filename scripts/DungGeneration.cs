@@ -168,32 +168,17 @@ public class DungGeneration
 
         foreach (var building in Buildings)
         {
-            // foreach (var room in building.Rooms)
-            // {
-            //     for (int x = 0; x < room.Size.X; x++)
-            //     {
-            //         for (int y = 0; y < room.Size.Y; y++)
-            //         {
-            //             grid.SetPointSolid(room.Position + new Vector2I(x, y));
-            //         }
-            //     }
-            // }
-            for (int x = 0; x < building.Rect.Size.X; x++)
+            foreach (var room in building.Rooms)
             {
-                for (int y = 0; y < building.Rect.Size.Y; x++)
+                for (int x = 0; x < room.Size.X; x++)
                 {
-                    //grid.SetPointSolid(building.Rect.Position + new Vector2I(x, y));
+                    for (int y = 0; y < room.Size.Y; y++)
+                    {
+                        grid.SetPointSolid(room.Position + new Vector2I(x, y));
+                    }
                 }
             }
-            int absX = Math.Abs(building.Rect.End.X - building.Doors[0].Position.X);
-            int absY = Math.Abs(building.Rect.End.Y - building.Doors[0].Position.Y);
-            for (int x = 0; x < absX; x++)
-            {
-                for (int y = 0; y < absY; y++)
-                {
-                    //grid.SetPointSolid(building.Doors[0].Position + new Vector2I(x, y) * building.Doors[0].Direction, false);
-                }
-            }
+            grid.SetPointSolid(building.Doors[0].Position, false);
         }
         GD.Print(Buildings[0].Rect.End + " " + Buildings[0].Doors[0].Position + " " + Buildings[0].Doors[0].Direction);
         Hallways = new List<Vector2[]>();

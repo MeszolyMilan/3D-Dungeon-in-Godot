@@ -16,8 +16,7 @@ data = {
 
 [node name="GenerationEditor" type="Node2D" parent="."]
 script = ExtResource("2_b6sm2")
-_seed_ = 3
-_spawnCircleSize_ = 192
-_buildingCount_ = 10
+_spawnCircleSize_ = 96
+_buildingCount_ = 15
 _extraConnectionChance_ = 20
-_showConnections_ = true
+_showHallways_ = true

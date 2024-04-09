@@ -125,6 +125,7 @@ public partial class DungGenEditor : Node2D
             //Rooms
             foreach (var room in building.Rooms)
             {
+
                 Color color = room == building.Rooms[0] ? Colors.Red : Colors.Blue;
                 DrawRect(room, color);
             }

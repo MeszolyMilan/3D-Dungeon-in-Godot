@@ -56,16 +56,6 @@ public partial class DungGenEditor : Node2D
             }
         }
     }
-    [Export]
-    private bool _showTriangles_
-    {
-        get => _showTriangles;
-        set
-        {
-            _showTriangles = value;
-            QueueRedraw();
-        }
-    }
     [Export(PropertyHint.Range, "0,100,1,")]
     private int _extraConnectionChance_
     {
@@ -77,12 +67,24 @@ public partial class DungGenEditor : Node2D
         }
     }
     [Export]
-    private bool _showConnections_
+    private bool _showTriangles_
     {
-        get => _showConnections;
+        get => _showTriangles;
         set
         {
-            _showConnections = value;
+            _showTriangles = value;
+            if (value) { _showHallways = false; }
+            QueueRedraw();
+        }
+    }
+    [Export]
+    private bool _showMST_
+    {
+        get => _showMST;
+        set
+        {
+            _showMST = value;
+            if (value) { _showHallways = false; }
             QueueRedraw();
         }
     }
@@ -93,7 +95,7 @@ public partial class DungGenEditor : Node2D
         set
         {
             _showHallways = value;
-            if (value) { _showConnections = false; _showTriangles = false; }
+            if (value) { _showMST = false; _showTriangles = false; }
             QueueRedraw();
         }
     }
@@ -104,7 +106,7 @@ public partial class DungGenEditor : Node2D
     private ulong _seed;
     private DungGeneration _gen;
     private bool _showTriangles;
-    private bool _showConnections;
+    private bool _showMST;
     private bool _showHallways;
     private void Generate()
     {
@@ -115,6 +117,7 @@ public partial class DungGenEditor : Node2D
     public override void _Draw()
     {
         if (_gen == null || Engine.IsEditorHint() == false) { return; }
+        Vector2 offset = new Vector2(0.5f, 0.5f);
 
         Color circleColor = Colors.White;
         circleColor.A = 0.25f;
@@ -136,7 +139,7 @@ public partial class DungGenEditor : Node2D
             //Doors
             foreach (var door in building.Doors)
             {
-                DrawCircle(door.Position, 2, Colors.Green);
+                DrawCircle(door.Position + offset, 2, Colors.Green);
             }
         }
         if (_showTriangles)
@@ -148,7 +151,7 @@ public partial class DungGenEditor : Node2D
                 DrawLine(_gen.ConnPs[_gen.ConnPTris[i]], _gen.ConnPs[_gen.ConnPTris[i + 2]], Colors.Yellow, 0.5f);
             }
         }
-        if (_showConnections)
+        if (_showMST)
         {
             foreach (var conn in _gen.Conns)
             {
@@ -157,7 +160,6 @@ public partial class DungGenEditor : Node2D
         }
         if (_showHallways)
         {
-            Vector2 offset = new Vector2(0.5f, 0.5f);
             foreach (var hallway in _gen.Hallways)
             {
                 for (int i = 0; i < hallway.Length - 1; i++)
@@ -166,5 +168,16 @@ public partial class DungGenEditor : Node2D
                 }
             }
         }
+        // for (int i = 0; i < _gen.Test.Region.Size.X; i++)
+        // {
+        //     for (int j = 0; j < _gen.Test.Region.Size.Y; j++)
+        //     {
+        //         Vector2I point = _gen.Test.Region.Position + new Vector2I(i, j);
+        //         if (_gen.Test.IsPointSolid(point))
+        //         {
+        //             DrawCircle(point, 0.1f, Colors.Magenta);
+        //         }
+        //     }
+        // }
     }
 }

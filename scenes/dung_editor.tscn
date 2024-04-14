@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://bui8l13arun5g"]
+
+[ext_resource type="Script" path="res://scripts/DungGenEditor.cs" id="1_um5pv"]
+
+[node name="Editor" type="Node2D"]
+script = ExtResource("1_um5pv")
+_seed_ = 3
+_spawnCircleSize_ = 64
+_buildingSize_ = 12
+_buildingCount_ = 20
+_extraConnectionChance_ = 20
+_showHallways_ = true
+metadata/_edit_lock_ = true

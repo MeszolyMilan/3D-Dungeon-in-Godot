@@ -1,23 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Godot;
 
 public class DungGeneration
 {
     public static RandomNumberGenerator RNG { get; private set; }
+    public TileTypes[,] TileMap { get; private set; }
     public List<Building> Buildings { get; private set; }
     public List<Vector2[]> Hallways { get; private set; }
     public Vector2[] ConnPs { get; private set; }
     public int[] ConnPTris { get; private set; }
     public List<(long, long)> Conns { get; private set; }
-    public AStarGrid2D Test { get; set; }
-    private List<(long, long)> _extraConns;
     private int _spawnRadius;
     private int _buildingCount;
     private int _buildingMaxSize;
     private int _extraConnectionChance;
-
+    private static Vector2I _zeroPos;
     public DungGeneration(ulong seed, int spawnRadius, int buildingCount, int buildingMaxSize, int extraConnectionChance)
     {
         RNG = new RandomNumberGenerator();
@@ -30,6 +30,11 @@ public class DungGeneration
         GenerateBuildings();
         GenerateHallwayConnections();
         GenerateHallways();
+    }
+    public static void GetTileMapXY(Vector2I position, out int X, out int Y)
+    {
+        X = Mathf.Abs(position.X - _zeroPos.X);
+        Y = Mathf.Abs(position.Y - _zeroPos.Y);
     }
     private Vector2I GetRandomPoint()
     {
@@ -45,39 +50,38 @@ public class DungGeneration
         for (int i = 0; i < _buildingCount; i++)
         {
             Vector2I position = GetRandomPoint();
-            Building building = new Building(position, _buildingMaxSize);
+            Building building = new Building(position, _buildingMaxSize, $"B{i}");
             Buildings.Add(building);
         }
-        //Move if overlapped
-        while (true)
+        //Handle overlap
+        List<(Building, Building)> overlapped = new List<(Building, Building)>();
+        do
         {
-            bool moved = false;
-            foreach (var building1 in Buildings)
+            overlapped.Clear();
+            for (int x = 0; x < Buildings.Count - 1; x++)
             {
-                foreach (var building2 in Buildings)
+                var building1 = Buildings[x];
+                for (int y = x + 1; y < Buildings.Count; y++)
                 {
-                    Vector2I center1 = building1.Rect.GetCenter();
-                    Vector2I center2 = building2.Rect.GetCenter();
-                    //GD.Print();
-                    if (building1 == building2 || building1.Rect.Intersects(building2.Rect) == false
-                    && (center1 - center2).LengthSquared() > 2000) { continue; }
-                    moved = true;
-
-
-                    if (center1.LengthSquared() < center2.LengthSquared())
+                    var building2 = Buildings[y];
+                    if (building1.Rect.Intersects(building2.Rect))
                     {
-                        Vector2 direction = center2 - center1;
-                        building2.Move((Vector2I)direction);
-                    }
-                    else
-                    {
-                        Vector2 direction = center1 - center2;
-                        building1.Move((Vector2I)direction);
+                        overlapped.Add((building1, building2));
                     }
                 }
             }
-            if (moved == false) { break; }
+            foreach (var overlap in overlapped)
+            {
+                while (overlap.Item1.Rect.Intersects(overlap.Item2.Rect))
+                {
+                    Vector2I direction = overlap.Item1.Rect.GetCenter() - overlap.Item2.Rect.GetCenter();
+                    overlap.Item1.Move(direction);
+                    overlap.Item2.Move(-direction);
+                }
+            }
         }
+        while (overlapped.Count > 0);
+
         foreach (var building in Buildings)
         {
             building.Replace();
@@ -136,7 +140,6 @@ public class DungGeneration
             connectionGraph.DisconnectPoints(shortestConn.Item1, shortestConn.Item2);
         }
         //Extra connections
-        _extraConns = new List<(long, long)>();
         foreach (var pointA in connectionGraph.GetPointIds())
         {
             foreach (var pointB in connectionGraph.GetPointConnections(pointA))
@@ -146,7 +149,7 @@ public class DungGeneration
                     //Add remaining connections with x chance
                     if (_extraConnectionChance >= RNG.RandiRange(0, 100))
                     {
-                        _extraConns.Add((pointA, pointB));
+                        Conns.Add((pointA, pointB));
                     }
                 }
             }
@@ -160,6 +163,7 @@ public class DungGeneration
             region = region.Merge(building.Rect);
         }
         region = new Rect2I(region.Position - Vector2I.One, region.Size + new Vector2I(2, 2));
+        _zeroPos = region.Position;
         AStarGrid2D grid = new AStarGrid2D()
         {
             Region = region,
@@ -168,6 +172,7 @@ public class DungGeneration
             DefaultComputeHeuristic = AStarGrid2D.Heuristic.Manhattan
         };
         grid.Update();
+        TileMap = new TileTypes[region.Size.X, region.Size.Y];
 
         foreach (var building in Buildings)
         {
@@ -192,23 +197,18 @@ public class DungGeneration
                     grid.SetPointSolid(building.Doors[0].Position + new Vector2I(x, y) * building.Doors[0].Direction, false);
                 }
             }
+            building.WriteTo(TileMap);
         }
         Hallways = new List<Vector2[]>();
-
         foreach (var conn in Conns)
         {
-            var path = grid.GetPointPath((Vector2I)ConnPs[conn.Item1], (Vector2I)ConnPs[conn.Item2]);
+            Vector2[] path = grid.GetPointPath((Vector2I)ConnPs[conn.Item1], (Vector2I)ConnPs[conn.Item2]);
             Hallways.Add(path);
-            foreach (var position in path)
+            for (int i = 1; i < path.Length - 1; i++)
             {
-                grid.SetPointWeightScale((Vector2I)position, 0f);
+                GetTileMapXY((Vector2I)path[i], out int X, out int Y);
+                TileMap[X, Y] = TileTypes.HALLWAY;
             }
         }
-        foreach (var conn in _extraConns)
-        {
-            Hallways.Add(grid.GetPointPath((Vector2I)ConnPs[conn.Item1], (Vector2I)ConnPs[conn.Item2]));
-        }
-
-        Test = grid;
     }
 }

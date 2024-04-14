@@ -13,35 +13,43 @@ public class Building
             Direction = direction;
         }
     }
+    public string DebugName { get; private set; }
     public Rect2I[] Rooms { get; private set; }
     public Rect2I Rect { get; private set; }
     public Door[] Doors { get; private set; }
     private Vector2I _offset;
 
-    public Building(Vector2I position, int maxSize)
+    public Building(Vector2I position, int maxSize, string name)
     {
+        DebugName = name;
         GenerateRooms(position, maxSize);
     }
-    // public TileTypes[] GetTiles()
-    // {
-    //     TileTypes[] tiles = new TileTypes[MainRoom.Size.X * MainRoom.Size.Y];
-    //     for (int x = 0; x < MainRoom.Size.X; x++)
-    //     {
-    //         for (int y = 0; y < MainRoom.Size.Y; y++)
-    //         {
-    //             int idx = x * MainRoom.Size.Y + y;
-    //             if (x == 0 || y == 0 || x == MainRoom.Size.X - 1 || y == MainRoom.Size.Y - 1)
-    //             {
-    //                 tiles[idx] = TileTypes.WALL;
-    //             }
-    //             else
-    //             {
-    //                 tiles[idx] = TileTypes.FLOOR;
-    //             }
-    //         }
-    //     }
-    //     return tiles;
-    // }
+    public void WriteTo(TileTypes[,] tileMap)
+    {
+        foreach (var room in Rooms)
+        {
+            DungGeneration.GetTileMapXY(room.Position, out int X, out int Y);
+            for (int x = 0; x <= room.Size.X; x++)
+            {
+                for (int y = 0; y <= room.Size.Y; y++)
+                {
+                    if (x == 0 || y == 0 || x == room.Size.X || y == room.Size.Y)
+                    {
+                        tileMap[X + x, Y + y] = TileTypes.WALL;
+                    }
+                    else
+                    {
+                        tileMap[X + x, Y + y] = TileTypes.FLOOR;
+                    }
+                }
+            }
+        }
+        foreach (var door in Doors)
+        {
+            DungGeneration.GetTileMapXY(door.Position, out int X, out int Y);
+            tileMap[X, Y] = TileTypes.FLOOR;
+        }
+    }
     public void Replace()
     {
         if (_offset == Rect.Position) { return; }
@@ -60,7 +68,7 @@ public class Building
     private void GenerateRooms(Vector2I position, int maxSize)
     {
         //http://chongyangma.com/publications/gl/2014_gl_preprint.pdf i should implement this instead of this shit xd
-        Rect2I mainRoom = new Rect2I(position, GetRandomSize(3, maxSize));
+        Rect2I mainRoom = new Rect2I(position, GetRandomSize(6, maxSize));
         int tryCount = 33;
         while (tryCount > 0)
         {
@@ -74,7 +82,7 @@ public class Building
                 var directionsCopy = new List<Vector2I>(directions);
                 Vector2I direction = directionsCopy[DungGeneration.RNG.RandiRange(0, directionsCopy.Count - 1)];
                 directionsCopy.Remove(direction);
-                Vector2I size = GetRandomSize(2, maxSize);
+                Vector2I size = GetRandomSize(4, maxSize);
                 Vector2I connectPoint = GetConnectPoint(mainRoom, size, direction);
                 if (direction == Vector2I.Up)
                 {
@@ -122,7 +130,7 @@ public class Building
             }
         }
         //Adding random extra size for hallways dont go next to walls
-        Vector2I extraSize = GetRandomSize(4, 12);
+        Vector2I extraSize = GetRandomSize(2, 4);
         Rect = new Rect2I(Rect.Position - extraSize / 2, Rect.Size + extraSize);
         _offset = Rect.Position;
     }

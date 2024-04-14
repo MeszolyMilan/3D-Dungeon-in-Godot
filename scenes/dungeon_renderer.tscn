@@ -1,0 +1,20 @@
+[gd_scene load_steps=7 format=3 uid="uid://c0bvltkbnlo6r"]
+
+[ext_resource type="Script" path="res://scripts/DungRenderer.cs" id="1_qglmu"]
+[ext_resource type="PackedScene" uid="uid://bui8l13arun5g" path="res://scenes/dung_editor.tscn" id="2_ib015"]
+[ext_resource type="PackedScene" uid="uid://dq0vesmbkcxlm" path="res://scenes/building_cell.tscn" id="3_l5hc8"]
+[ext_resource type="PackedScene" uid="uid://rvl1p7drjmxk" path="res://scenes/hallway_cell.tscn" id="4_3enes"]
+[ext_resource type="PackedScene" uid="uid://voeb6nse1u0u" path="res://scenes/door.tscn" id="5_exyf2"]
+[ext_resource type="Script" path="res://scripts/camera.gd" id="6_unnub"]
+
+[node name="DungeonRenderer" type="Node3D" node_paths=PackedStringArray("_cam")]
+script = ExtResource("1_qglmu")
+_dungEditorScene = ExtResource("2_ib015")
+_buildingCellScene = ExtResource("3_l5hc8")
+_hallwayCellScene = ExtResource("4_3enes")
+_doorScene = ExtResource("5_exyf2")
+_cam = NodePath("Camera3D")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+fov = 80.0
+script = ExtResource("6_unnub")
